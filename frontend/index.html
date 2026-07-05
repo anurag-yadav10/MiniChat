@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="css/style.css" />
+    <title>MiniChat</title>
+  </head>
+  <body>
+    <div class="container">
+      <!-- join Screen -->
+      <div id="join-screen">
+        <div id="logOut">
+          <h2>MiniChat</h2>
+          <button id="logout-btn">Logout</button>
+        </div>
+
+        <p id="welcome-msg"></p>
+
+        <input
+          type="text"
+          id="room-input"
+          placeholder="Room Code (e.g. room123)"
+        />
+        <button id="join-btn">Join Room</button>
+      </div>
+
+      <!-- Chat Screen -->
+      <div id="chat-screen">
+        <div id="chat-header">
+          <div class="upper-header">
+            <h3 id="room-label">Room:</h3>
+            <button id="leave-btn">Leave Room</button>
+          </div>
+          <div id="people-count">1 person in this room</div>
+        </div>
+
+        <div id="messages">
+          <div id="loading-spinner">
+            <div id="spinner"></div>
+            <span id="loading">Loading messages...</span>
+          </div>
+        </div>
+
+        <div id="message-form">
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 4px">
+            <input
+              type="text"
+              id="message-input"
+              placeholder="Type a message..."
+            />
+            <span
+              id="char-count"
+              style="font-size: 11px; color: #999; text-align: right"
+              >0/1000</span
+            >
+          </div>
+          <button id="send-btn">Send</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Socket.io client (served automatically by Socket.io) -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

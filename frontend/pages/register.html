@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../css/style.css">
+    <title>Register - MiniChat</title>
+</head>
+<body>
+    <div class="container">
+        <div class="auth-box">
+            <h2>Create Account</h2>
+            <p>Pick a username that will show on your messages forever.</p>
+
+            <div class="error-message" id="error-msg"></div>
+
+            <input type="text" id="username-input" placeholder="Username (3-20 characters)">
+            <input type="email" id="email-input" placeholder="Email address">
+            <input type="password" id="password-input" placeholder="Password (min 8 characters)">
+
+            <div id="password-rules" style="margin-bottom: 12px;">
+                <div class="rule" id="rule-length">× At least 8 characters</div>
+                <div class="rule" id="rule-upper">× One uppercase letter</div>
+                <div class="rule" id="rule-lower">× One lowecase letter</div>
+                <div class="rule" id="rule-number">× One number</div>
+            </div>
+
+            <button id="register-btn">Create Account</button>
+
+            <div class="switch-link">
+                Already have an account? <a href="login.html">Log in</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/auth.js"></script>
+</body>
+</html>
