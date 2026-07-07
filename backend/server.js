@@ -1,4 +1,5 @@
 require('dotenv').config();
+const cookieParser = require('cookie-parser');
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
@@ -36,6 +37,9 @@ app.use(generalLimiter);
 
 app.use(express.json());
 
+//cookie
+app.use(cookieParser());
+
 // Frontend Static files
 app.use(express.static(path.join(__dirname, '../frontend')));
 app.use('/api/v1/auth', authLimiter, authRoutes);
@@ -69,7 +73,8 @@ io.use((socket, next) => {
     socket.username = decoded.username;
     next();
   } catch (error) {
-    return next(new Error('Invalid or expired token'));
+    if (error.name === 'TokenExpiredError') {
+    }
   }
 });
 
