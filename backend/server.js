@@ -74,7 +74,10 @@ io.use((socket, next) => {
     next();
   } catch (error) {
     if (error.name === 'TokenExpiredError') {
+      return next(new Error('Token expired'));
     }
+
+    return next(new Error('Invalid token'));
   }
 });
 

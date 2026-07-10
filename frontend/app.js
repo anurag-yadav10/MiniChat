@@ -1,3 +1,27 @@
+async function refreshAccessToken() {
+  try {
+    const res = await fetch('/api/v1/auth/refresh', {
+      method: 'POST',
+      credentials: 'include',
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      localStorage.clear();
+      window.location.href = './pages/login.html';
+      return null;
+    }
+
+    localStorage.setItem('token', data.token);
+    return data.token;
+  } catch (error) {
+    localStorage.clear();
+    window.location.href = './pages/login.html';
+    return null;
+  }
+}
+
 //AUTH CHECK
 const token = localStorage.getItem('token');
 const myUserId = localStorage.getItem('userId');
@@ -13,9 +37,20 @@ const socket = io({
 });
 
 //failure - token expired or invalid
-socket.on('connect_error', (error) => {
+socket.on('connect_error', async (error) => {
+  if (error.message === 'Token expired') {
+    const newToken = await refreshAccessToken();
+
+    if (newToken) {
+      socket.auth.token = newToken;
+      socket.connect();
+    }
+
+    return;
+  }
+
   if (
-    error.message === 'Invalid or expired token' ||
+    error.message === 'Invalid token' ||
     error.message === 'No token provided'
   ) {
     localStorage.clear();
@@ -89,7 +124,16 @@ leaveBtn.addEventListener('click', () => {
 });
 
 //LOG OUT
-document.getElementById('logout-btn').addEventListener('click', () => {
+document.getElementById('logout-btn').addEventListener('click', async () => {
+  try {
+    await fetch('/api/v1/auth/logout', {
+      method: 'POST',
+      credentials: 'include',
+    });
+  } catch (error) {
+    console.error('Logout failed:', error);
+  }
+
   localStorage.clear();
   window.location.href = './pages/login.html';
 });
