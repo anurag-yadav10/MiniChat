@@ -199,6 +199,20 @@ router.post('/refresh', async (req, res) => {
         .json({ message: 'Invalid refresh token' });
     }
 
+    if (storedToken.expiresAt < new Date()) {
+      await RefreshToken.deleteOne({ token: refreshToken });
+
+      res.clearCookie('refreshToken', {
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: process.env.NODE_ENV === 'production',
+      });
+
+      return res
+        .status(StatusCodes.UNAUTHORIZED)
+        .json({ message: 'Refresh token expired' });
+    }
+
     const user = await User.findById(storedToken.userId);
 
     if (!user) {

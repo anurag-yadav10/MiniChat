@@ -85,7 +85,16 @@ io.on('connection', (socket) => {
   console.log(`${socket.username} connected: ${socket.id}`);
 
   // User joins a room
-  socket.on('join-room', async (roomCode) => {
+  socket.on('join-room', async (payload) => {
+    const roomCode = typeof payload === 'string' ? payload : payload?.roomCode;
+    const loadHistory =
+      typeof payload === 'string' ? true : payload?.loadHistory !== false;
+
+    if (!roomCode) {
+      socket.emit('error-message', 'Room code is required.');
+      return;
+    }
+
     //Join the socket.io room
     socket.join(roomCode);
 
@@ -109,13 +118,15 @@ io.on('connection', (socket) => {
     }
 
     //Loading past 30 messages for the user just joined, and showing it to them
-    try {
-      const pastMessages = await Message.find({ roomCode })
-        .sort({ time: 1 }) //from old to new messages sorting
-        .limit(30);
-      socket.emit('load-past-messages', pastMessages);
-    } catch (error) {
-      console.error('Error loading messages: ', error.message);
+    if (loadHistory) {
+      try {
+        const pastMessages = await Message.find({ roomCode })
+          .sort({ time: 1 }) //from old to new messages sorting
+          .limit(30);
+        socket.emit('load-past-messages', pastMessages);
+      } catch (error) {
+        console.error('Error loading messages: ', error.message);
+      }
     }
 
     //Tell everyone in room that someone joined
@@ -144,6 +155,14 @@ io.on('connection', (socket) => {
     //Length check
     if (!message || message.trim().length === 0) {
       socket.emit('error-message', 'message cannot be empty');
+      return;
+    }
+
+    if (!socket.roomCode) {
+      socket.emit(
+        'error-message',
+        'Please join a room before sending messages.',
+      );
       return;
     }
 
