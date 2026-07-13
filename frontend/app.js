@@ -108,6 +108,10 @@ if (!token || !myUserId || !myUsername) {
 
     if (!roomCode) return showJoinError('Please enter a room code');
 
+    if (roomCode.length < 4 || roomCode.length > 20) {
+      return showJoinError('Room code must be between 4 to 20 characters');
+    }
+
     joinRoom(roomCode);
   });
 
@@ -116,6 +120,10 @@ if (!token || !myUserId || !myUsername) {
       const roomCode = roomInput.value.trim();
 
       if (!roomCode) return showJoinError('Please enter a room code');
+
+      if (roomCode.length < 4 || roomCode.length > 20) {
+        return showJoinError('Room code must be between 4 to 20 characters');
+      }
 
       joinRoom(roomCode);
     }
@@ -132,6 +140,11 @@ if (!token || !myUserId || !myUsername) {
     chatScreen.style.display = 'none';
     messagesDiv.innerHTML = '';
     roomInput.value = '';
+
+    // Clear any previous validation errors
+    const existing = document.getElementById('join-error');
+
+    if (existing) existing.remove();
   });
 
   //LOG OUT

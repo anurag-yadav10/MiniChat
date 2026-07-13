@@ -95,6 +95,14 @@ io.on('connection', (socket) => {
       return;
     }
 
+    if (roomCode.length < 4 || roomCode.length > 20) {
+      socket.emit(
+        'error-message',
+        'Room code must be between 4 and 20 characters',
+      );
+      return;
+    }
+
     //Join the socket.io room
     socket.join(roomCode);
 
