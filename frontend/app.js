@@ -37,6 +37,11 @@ if (!token || !myUserId || !myUsername) {
     auth: { token },
   });
 
+  //typing UI
+  let isTyping = false;
+  let typingTimeout = null;
+  const typingUsers = new Set();
+
   //failure - token expired or invalid
   socket.on('connect_error', async (error) => {
     if (error.message === 'Token expired') {
@@ -135,6 +140,12 @@ if (!token || !myUserId || !myUsername) {
 
     currentRoomCode = null;
 
+    //clearing typing state when leaving the room
+    clearTimeout(typingTimeout);
+    isTyping = false;
+    typingUsers.clear();
+    updateTypingIndicator();
+
     //resetting UI back to join screen
     joinScreen.style.display = 'block';
     chatScreen.style.display = 'none';
@@ -166,6 +177,30 @@ if (!token || !myUserId || !myUsername) {
 
   messageInput.addEventListener('input', () => {
     updateCharCount(messageInput.value.length);
+
+    if (messageInput.value.trim().length === 0) {
+      //if input is cleared stop showing typing
+      if (isTyping) {
+        isTyping = false;
+        socket.emit('stop-typing');
+        clearTimeout(typingTimeout);
+      }
+    } else {
+      // If user starts typing
+      if (!isTyping) {
+        isTyping = true;
+        socket.emit('typing');
+      }
+
+      //Reset the 2 sec timeout to check when they stop key presses
+      clearTimeout(typingTimeout);
+      typingTimeout = setTimeout(() => {
+        if (isTyping) {
+          isTyping = false;
+          socket.emit('stop-typing');
+        }
+      }, 2000);
+    }
   });
 
   function updateCharCount(length) {
@@ -214,6 +249,13 @@ if (!token || !myUserId || !myUsername) {
 
     messageInput.value = '';
     updateCharCount(0);
+
+    //clear typing timeout and emit stop-typing
+    clearTimeout(typingTimeout);
+    if (isTyping) {
+      isTyping = false;
+      socket.emit('stop-typing');
+    }
   }
 
   // Listen for events from server
@@ -248,6 +290,26 @@ if (!token || !myUserId || !myUsername) {
   socket.on('user-left', ({ message, users }) => {
     addSystemMessage(message);
     updatePeopleCount(users.length);
+
+    //Clean up typing users who left the room
+    const activeUsernames = new Set(users.map((u) => u.username));
+    for (const user of typingUsers) {
+      if (!activeUsernames.has(user)) {
+        typingUsers.delete(user);
+      }
+    }
+    updateTypingIndicator();
+  });
+
+  //listening for typing event from other users
+  socket.on('user-typing', ({ username }) => {
+    typingUsers.add(username);
+    updateTypingIndicator();
+  });
+
+  socket.on('user-stop-typing', ({ username }) => {
+    typingUsers.delete(username);
+    updateTypingIndicator();
   });
 
   //receive a message from someone else
@@ -263,6 +325,27 @@ if (!token || !myUserId || !myUsername) {
   });
 
   // HELPER FUNCTIONS
+
+  function updateTypingIndicator() {
+    const indicator = document.getElementById('typing-indicator');
+    if (!indicator) return;
+
+    const usersArray = Array.from(typingUsers);
+
+    if (usersArray.length === 0) {
+      indicator.textContent = '';
+      indicator.style.display = 'none';
+    } else if (usersArray.length === 1) {
+      indicator.textContent = `${usersArray[0]} is typing...`;
+      indicator.style.display = 'block';
+    } else if (usersArray.length === 2) {
+      indicator.textContent = `${usersArray[0]} and ${usersArray[1]} are typing...`;
+      indicator.style.display = 'block';
+    } else {
+      indicator.textContent = `${usersArray.slice(0, -1).join(', ')}, and ${usersArray[usersArray.length - 1]} are typing...`;
+      indicator.style.display = 'none';
+    }
+  }
 
   function addMessage({ userId, username, message, time }) {
     //Dont show own message twice,we did it already

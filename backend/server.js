@@ -138,7 +138,7 @@ io.on('connection', (socket) => {
     }
 
     //Tell everyone in room that someone joined
-    io.to(roomCode).emit('user-joined', {
+    socket.to(roomCode).emit('user-joined', {
       message: `${socket.username} joined the room`,
       users: roomUsers[roomCode],
     });
@@ -229,6 +229,22 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     handleLeave(socket);
+  });
+
+  //listen for typing and broadcast to others in the room
+  socket.on('typing', () => {
+    const roomCode = socket.roomCode;
+    if (!roomCode) return;
+
+    socket.to(roomCode).emit('user-typing', { username: socket.username });
+  });
+
+  //listen to stop typing and broadcast to others
+  socket.on('stop-typing', () => {
+    const roomCode = socket.roomCode;
+    if (!roomCode) return;
+
+    socket.to(roomCode).emit('user-stop-typing', { username: socket.username });
   });
 });
 
