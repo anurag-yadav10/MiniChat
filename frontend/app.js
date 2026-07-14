@@ -78,7 +78,7 @@ if (!token || !myUserId || !myUsername) {
   const peopleCount = document.getElementById('people-count');
 
   socket.on('connect', () => {
-    if (currentRoomCode && chatScreen.style.display === 'block') {
+    if (currentRoomCode && chatScreen.style.display !== 'none') {
       socket.emit('join-room', {
         roomCode: currentRoomCode,
         loadHistory: false,
@@ -94,8 +94,10 @@ if (!token || !myUserId || !myUsername) {
       loadHistory,
     });
 
+    //Expand container and show chat room
+    document.querySelector('.container').classList.add('chat-active');
     joinScreen.style.display = 'none';
-    chatScreen.style.display = 'block';
+    chatScreen.style.display = 'flex';
     roomLabel.textContent = `Room: ${roomCode}`;
 
     if (loadHistory) {
@@ -147,10 +149,15 @@ if (!token || !myUserId || !myUsername) {
     updateTypingIndicator();
 
     //resetting UI back to join screen
+    document.querySelector('.container').classList.remove('chat-active');
     joinScreen.style.display = 'block';
     chatScreen.style.display = 'none';
     messagesDiv.innerHTML = '';
     roomInput.value = '';
+
+    //clear user list sidebar
+    const usersList = document.getElementById('users-list');
+    if (usersList) usersList.innerHTML = '';
 
     // Clear any previous validation errors
     const existing = document.getElementById('join-error');
@@ -281,9 +288,12 @@ if (!token || !myUserId || !myUsername) {
   });
 
   //someone joined
-  socket.on('user-joined', ({ message, users }) => {
-    addSystemMessage(message);
+  socket.on('user-joined', ({ message, users, username }) => {
+    if (username !== myUsername) {
+      addSystemMessage(message);
+    }
     updatePeopleCount(users.length);
+    updateOnlineUsers(users);
   });
 
   //someone left
@@ -299,6 +309,7 @@ if (!token || !myUserId || !myUsername) {
       }
     }
     updateTypingIndicator();
+    updateOnlineUsers(users);
   });
 
   //listening for typing event from other users
@@ -345,6 +356,33 @@ if (!token || !myUserId || !myUsername) {
       indicator.textContent = `${usersArray.slice(0, -1).join(', ')}, and ${usersArray[usersArray.length - 1]} are typing...`;
       indicator.style.display = 'none';
     }
+  }
+
+  function updateOnlineUsers(users) {
+    const usersList = document.getElementById('users-list');
+    if (!usersList) return;
+
+    usersList.innerHTML = '';
+
+    users.forEach((user) => {
+      const li = document.createElement('li');
+      li.className = 'user-item';
+
+      const dot = document.createElement('span');
+      dot.className = 'status-dot';
+
+      if (user.userId === myUserId) {
+        dot.classList.add('self');
+      }
+
+      const name = document.createElement('span');
+      name.textContent =
+        user.username + (user.userId === myUserId ? ' (You)' : '');
+
+      li.appendChild(dot);
+      li.appendChild(name);
+      usersList.appendChild(li);
+    });
   }
 
   function addMessage({ userId, username, message, time }) {

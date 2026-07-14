@@ -138,9 +138,10 @@ io.on('connection', (socket) => {
     }
 
     //Tell everyone in room that someone joined
-    socket.to(roomCode).emit('user-joined', {
+    io.to(roomCode).emit('user-joined', {
       message: `${socket.username} joined the room`,
       users: roomUsers[roomCode],
+      username: socket.username,
     });
 
     console.log(`${socket.username} joined the room: ${roomCode}`);
