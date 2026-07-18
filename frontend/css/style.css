@@ -502,9 +502,11 @@ button:disabled {
   .container.chat-active {
     position: fixed;
     top: 0;
+    bottom: 0;
     left: 0;
-    width: 100vw !important;
-    height: 100vh !important;
+    right: 0;
+    width: 100% !important;
+    height: 100dvh !important;
     max-width: 100% !important;
     border-radius: 0;
   }
