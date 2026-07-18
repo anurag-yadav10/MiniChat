@@ -84,6 +84,22 @@ if (!token || !myUserId || !myUsername) {
   const roomDuration = document.getElementById('room-duration');
   const createBtn = document.getElementById('create-btn');
   const logoutBtn = document.getElementById('logout-btn');
+  const toggleUsersBtn = document.getElementById('toggle-users-btn');
+  const chatSidebar = document.getElementById('chat-sidebar');
+  const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+  // toggle side bar on small screens
+  if (toggleUsersBtn && chatSidebar && sidebarOverlay) {
+    toggleUsersBtn.addEventListener('click', () => {
+      chatSidebar.classList.toggle('active');
+      sidebarOverlay.classList.toggle('active');
+    });
+
+    sidebarOverlay.addEventListener('click', () => {
+      chatSidebar.classList.remove('active');
+      sidebarOverlay.classList.remove('active');
+    });
+  }
 
   //Tab switching logic
   tabJoin.addEventListener('click', () => {
@@ -227,6 +243,9 @@ if (!token || !myUserId || !myUsername) {
     roomInput.value = '';
     createRoomInput.value = '';
 
+    //close sidebar drawer
+    if (chatSidebar) chatSidebar.classList.remove('active');
+    if (sidebarOverlay) sidebarOverlay.classList.remove('active');
     //clear user list sidebar
     const usersList = document.getElementById('users-list');
     if (usersList) usersList.innerHTML = '';

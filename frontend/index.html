@@ -58,7 +58,10 @@
 
       <!-- Chat Screen -->
       <div id="chat-screen">
-        <!-- side bar -->
+        <!-- side bar overlay for mobile tap to close drawer -->
+        <div id="sidebar-overlay"></div>
+
+        <!-- Side bar -->
         <div id="chat-sidebar">
           <h3>Online Users</h3>
           <ul id="users-list"></ul>
@@ -68,7 +71,10 @@
         <div id="chat-area">
           <div id="chat-header">
             <div class="upper-header">
-              <h3 id="room-label">Room:</h3>
+              <div class="header-left">
+                <button id="toggle-users-btn">☰</button>
+                <h3 id="room-label">Room:</h3>
+              </div>
               <button id="leave-btn">Leave Room</button>
             </div>
             <div id="people-count">1 person in this room</div>
