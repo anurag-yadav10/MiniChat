@@ -27,7 +27,7 @@ const token = localStorage.getItem('token');
 const myUserId = localStorage.getItem('userId');
 const myUsername = localStorage.getItem('username');
 
-let currentRoomCode = null;
+let currentRoomCode = sessionStorage.getItem('currentRoomCode') || null;
 
 if (!token || !myUserId || !myUsername) {
   window.location.href = './pages/login.html';
@@ -136,6 +136,7 @@ if (!token || !myUserId || !myUsername) {
 
   function joinRoom(roomCode, loadHistory = true) {
     currentRoomCode = roomCode;
+    sessionStorage.setItem('currentRoomCode', roomCode);
 
     setButtonLoading(joinBtn, true, 'Join room');
 
@@ -226,6 +227,7 @@ if (!token || !myUserId || !myUsername) {
     socket.emit('leave-room');
 
     currentRoomCode = null;
+    sessionStorage.removeItem('currentRoomCode');
 
     //clearing typing state when leaving the room
     clearTimeout(typingTimeout);
@@ -259,6 +261,8 @@ if (!token || !myUserId || !myUsername) {
   //LOG OUT
   logoutBtn.addEventListener('click', async () => {
     setButtonLoading(logoutBtn, true, 'Logout');
+    sessionStorage.clear();
+
     try {
       await fetch('/api/v1/auth/logout', {
         method: 'POST',
@@ -447,6 +451,10 @@ if (!token || !myUserId || !myUsername) {
       showJoinError(message);
       loadingSpinner.style.display = 'none'; //dismiss loading spinner
 
+      //reset saved room state if join attempt is failed
+      currentRoomCode = null;
+      sessionStorage.removeItem('currentRoomCode');
+
       //reset buttons to active states
       setButtonLoading(joinBtn, false, 'Join room');
       setButtonLoading(createBtn, false, 'Create room');
@@ -591,5 +599,10 @@ if (!token || !myUserId || !myUsername) {
     setTimeout(() => {
       div.remove();
     }, 3000);
+  }
+
+  //auto rejoin if page is refreshed and a room code was stored in session storage
+  if (currentRoomCode) {
+    joinRoom(currentRoomCode);
   }
 }
