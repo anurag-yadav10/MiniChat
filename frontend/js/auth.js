@@ -14,9 +14,10 @@ function setLoading(btn, loading) {
 
 //REGISTER
 
+const registerForm = document.getElementById('register-form');
 const registerBtn = document.getElementById('register-btn');
 
-if (registerBtn) {
+if (registerForm) {
   registerBtn.dataset.label = 'Create Account';
 
   const passwordInput = document.getElementById('password-input');
@@ -36,11 +37,18 @@ if (registerBtn) {
     const el = document.getElementById(id);
     if (!el) return;
 
+    //clear any existing pending timeout for this rule
+    if (el.timeoutId) {
+      clearTimeout(el.timeoutId);
+      el.timeoutId = null;
+    }
+
     if (passed) {
       el.classList.add('passed');
       el.textContent = '✓ ' + el.textContent.slice(2);
-      setTimeout(() => {
+      el.timeoutId = setTimeout(() => {
         el.style.display = 'none';
+        el.timeoutId = null;
       }, 500);
     } else {
       el.style.display = 'block';
@@ -49,7 +57,8 @@ if (registerBtn) {
     }
   }
 
-  registerBtn.addEventListener('click', async () => {
+  registerForm.addEventListener('submit', async (e) => {
+    e.preventDefault(); //prevents page reload
     const username = document.getElementById('username-input').value.trim();
     const email = document.getElementById('email-input').value.trim();
     const password = document.getElementById('password-input').value;
@@ -103,12 +112,15 @@ if (registerBtn) {
 
 //LOGIN
 
+const loginForm = document.getElementById('login-form');
 const loginBtn = document.getElementById('login-btn');
 
-if (loginBtn) {
+if (loginForm) {
   loginBtn.dataset.label = 'Log in';
 
-  loginBtn.addEventListener('click', async () => {
+  loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
     const email = document.getElementById('email-input').value.trim();
     const password = document.getElementById('password-input').value;
 

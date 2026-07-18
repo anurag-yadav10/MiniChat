@@ -1,30 +1,40 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../css/style.css">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="../css/style.css" />
     <title>Login - MiniChat</title>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <div class="auth-box">
-          <h2>Welcome Back</h2>  
-          <p>Log in to continue to MiniChat</p>
+      <form class="auth-box" id="login-form">
+        <h2>Welcome Back</h2>
+        <p>Log in to continue to MiniChat</p>
 
-          <div class="error-message" id="error-msg"></div>
+        <div class="error-message" id="error-msg"></div>
 
-          <input type="email" id="email-input" placeholder="Email address">
-          <input type="password" id="password-input" placeholder="Password">
+        <input
+          type="email"
+          id="email-input"
+          placeholder="Email address"
+          required
+        />
+        <input
+          type="password"
+          id="password-input"
+          placeholder="Password"
+          required
+        />
 
-          <button id="login-btn">Log in</button>
+        <button id="login-btn" type="submit">Log in</button>
 
-          <div class="switch-link">
-            Don't have an account? <a href="register.html">Register</a>
-          </div>
+        <div class="switch-link">
+          Don't have an account? <a href="register.html">Register</a>
         </div>
+      </form>
     </div>
-    
+
     <script src="../js/auth.js"></script>
-</body>
+  </body>
 </html>

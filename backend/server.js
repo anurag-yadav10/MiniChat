@@ -155,14 +155,17 @@ io.on('connection', (socket) => {
 
   // User joins a room
   socket.on('join-room', async (payload) => {
-    const roomCode = typeof payload === 'string' ? payload : payload?.roomCode;
+    const rawRoomCode =
+      typeof payload === 'string' ? payload : payload?.roomCode;
     const loadHistory =
       typeof payload === 'string' ? true : payload?.loadHistory !== false;
 
-    if (!roomCode) {
+    if (!rawRoomCode) {
       socket.emit('error-message', 'Room code is required.');
       return;
     }
+
+    const roomCode = rawRoomCode.trim().toLowerCase();
 
     if (roomCode.length < 4 || roomCode.length > 20) {
       socket.emit(
@@ -185,6 +188,7 @@ io.on('connection', (socket) => {
     } catch (error) {
       console.error('Error verifying room:', error.message);
       socket.emit('error-message', 'Server error in joining room');
+      return;
     }
 
     // Storing user info on their socket:

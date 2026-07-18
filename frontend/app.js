@@ -438,10 +438,10 @@ if (!token || !myUserId || !myUsername) {
 
   function setButtonLoading(button, isLoading, originalText) {
     if (isLoading) {
-      button.disabled = 'true';
+      button.disabled = true;
       button.textContent = 'Please wait...';
     } else {
-      button.disabled = 'false';
+      button.disabled = false;
       button.textContent = originalText;
     }
   }
@@ -463,7 +463,7 @@ if (!token || !myUserId || !myUsername) {
       indicator.style.display = 'block';
     } else {
       indicator.textContent = `${usersArray.slice(0, -1).join(', ')}, and ${usersArray[usersArray.length - 1]} are typing...`;
-      indicator.style.display = 'none';
+      indicator.style.display = 'block';
     }
   }
 
