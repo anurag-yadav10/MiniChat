@@ -76,6 +76,38 @@ if (!token || !myUserId || !myUsername) {
   const sendBtn = document.getElementById('send-btn');
   const roomLabel = document.getElementById('room-label');
   const peopleCount = document.getElementById('people-count');
+  const tabJoin = document.getElementById('tab-join');
+  const tabCreate = document.getElementById('tab-create');
+  const joinFormContainer = document.getElementById('join-form-container');
+  const createFormContainer = document.getElementById('create-form-container');
+  const createRoomInput = document.getElementById('create-room-input');
+  const roomDuration = document.getElementById('room-duration');
+  const createBtn = document.getElementById('create-btn');
+  const logoutBtn = document.getElementById('logout-btn');
+
+  //Tab switching logic
+  tabJoin.addEventListener('click', () => {
+    tabCreate.classList.remove('active');
+    tabJoin.classList.add('active');
+    createFormContainer.classList.remove('active');
+    joinFormContainer.classList.add('active');
+    clearJoinError();
+  });
+
+  tabCreate.addEventListener('click', () => {
+    tabJoin.classList.remove('active');
+    tabCreate.classList.add('active');
+    joinFormContainer.classList.remove('active');
+    createFormContainer.classList.add('active');
+    clearJoinError();
+  });
+
+  function clearJoinError() {
+    const existing = document.getElementById('join-error');
+    if (existing) {
+      existing.remove();
+    }
+  }
 
   socket.on('connect', () => {
     if (currentRoomCode && chatScreen.style.display !== 'none') {
@@ -89,20 +121,24 @@ if (!token || !myUserId || !myUsername) {
   function joinRoom(roomCode, loadHistory = true) {
     currentRoomCode = roomCode;
 
+    setButtonLoading(joinBtn, true, 'Join room');
+
     socket.emit('join-room', {
       roomCode,
       loadHistory,
     });
 
+    if (loadHistory) {
+      loadingSpinner.style.display = 'flex';
+    }
+  }
+
+  function showChatUI(roomCode) {
     //Expand container and show chat room
     document.querySelector('.container').classList.add('chat-active');
     joinScreen.style.display = 'none';
     chatScreen.style.display = 'flex';
     roomLabel.textContent = `Room: ${roomCode}`;
-
-    if (loadHistory) {
-      loadingSpinner.style.display = 'flex';
-    }
   }
 
   //showing logged in username on join screen
@@ -122,6 +158,37 @@ if (!token || !myUserId || !myUsername) {
     joinRoom(roomCode);
   });
 
+  //CREATE Room
+  createBtn.addEventListener('click', () => {
+    const roomCode = createRoomInput.value.trim();
+    const duration = roomDuration.value;
+
+    if (!roomCode) return showJoinError('Please enter a room code');
+
+    if (roomCode.length < 4 || roomCode.length > 20) {
+      return showJoinError('Room code must be between 4 to 20 characters');
+    }
+
+    setButtonLoading(createBtn, true, 'Create room');
+    socket.emit('create-room', { roomCode, durationDays: duration });
+  });
+
+  createRoomInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      const roomCode = createRoomInput.value.trim();
+      const duration = roomDuration.value;
+
+      if (!roomCode) return showJoinError('Please enter a room code');
+
+      if (roomCode.length < 4 || roomCode.length > 20) {
+        return showJoinError('Room code must be between 4 to 20 characters');
+      }
+
+      setButtonLoading(createBtn, true, 'Create room');
+      socket.emit('create-room', { roomCode, durationDays: duration });
+    }
+  });
+
   roomInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
       const roomCode = roomInput.value.trim();
@@ -137,6 +204,8 @@ if (!token || !myUserId || !myUsername) {
   });
 
   leaveBtn.addEventListener('click', () => {
+    setButtonLoading(leaveBtn, true, 'Leave room');
+
     //telling server that a person is leaving
     socket.emit('leave-room');
 
@@ -148,12 +217,15 @@ if (!token || !myUserId || !myUsername) {
     typingUsers.clear();
     updateTypingIndicator();
 
+    setButtonLoading(leaveBtn, false, 'Leave room');
+
     //resetting UI back to join screen
     document.querySelector('.container').classList.remove('chat-active');
     joinScreen.style.display = 'block';
     chatScreen.style.display = 'none';
     messagesDiv.innerHTML = '';
     roomInput.value = '';
+    createRoomInput.value = '';
 
     //clear user list sidebar
     const usersList = document.getElementById('users-list');
@@ -166,7 +238,8 @@ if (!token || !myUserId || !myUsername) {
   });
 
   //LOG OUT
-  document.getElementById('logout-btn').addEventListener('click', async () => {
+  logoutBtn.addEventListener('click', async () => {
+    setButtonLoading(logoutBtn, true, 'Logout');
     try {
       await fetch('/api/v1/auth/logout', {
         method: 'POST',
@@ -178,6 +251,7 @@ if (!token || !myUserId || !myUsername) {
 
     localStorage.clear();
     window.location.href = './pages/login.html';
+    setButtonLoading(logoutBtn, false, 'Logout');
   });
 
   // SEND MESSAGE
@@ -267,6 +341,15 @@ if (!token || !myUserId || !myUsername) {
 
   // Listen for events from server
 
+  //room created
+  socket.on('room-created', ({ roomCode }) => {
+    //reset create button loading state
+    setButtonLoading(createBtn, false, 'Create room');
+
+    joinRoom(roomCode);
+    createRoomInput.value = '';
+  });
+
   //loading the messages when joining
   socket.on('load-past-messages', (messages) => {
     //hide spinner
@@ -289,7 +372,14 @@ if (!token || !myUserId || !myUsername) {
 
   //someone joined
   socket.on('user-joined', ({ message, users, username }) => {
-    if (username !== myUsername) {
+    if (username === myUsername) {
+      showChatUI(currentRoomCode);
+      loadingSpinner.style.display = 'none';
+
+      //reset button when joined
+      setButtonLoading(joinBtn, false, 'Join room');
+      setButtonLoading(createBtn, false, 'Create room');
+    } else {
       addSystemMessage(message);
     }
     updatePeopleCount(users.length);
@@ -332,10 +422,29 @@ if (!token || !myUserId || !myUsername) {
   });
 
   socket.on('error-message', (message) => {
-    showChatError(message);
+    if (chatScreen.style.display === 'flex') {
+      showChatError(message);
+    } else {
+      showJoinError(message);
+      loadingSpinner.style.display = 'none'; //dismiss loading spinner
+
+      //reset buttons to active states
+      setButtonLoading(joinBtn, false, 'Join room');
+      setButtonLoading(createBtn, false, 'Create room');
+    }
   });
 
   // HELPER FUNCTIONS
+
+  function setButtonLoading(button, isLoading, originalText) {
+    if (isLoading) {
+      button.disabled = 'true';
+      button.textContent = 'Please wait...';
+    } else {
+      button.disabled = 'false';
+      button.textContent = originalText;
+    }
+  }
 
   function updateTypingIndicator() {
     const indicator = document.getElementById('typing-indicator');
@@ -432,7 +541,11 @@ if (!token || !myUserId || !myUsername) {
     div.style.cssText = 'color: #e74c3c; font-size: 13px; margin-bottom: 10px';
     div.textContent = message;
 
-    joinBtn.insertAdjacentElement('beforebegin', div);
+    if (createFormContainer.classList.contains('active')) {
+      createBtn.insertAdjacentElement('beforebegin', div);
+    } else {
+      joinBtn.insertAdjacentElement('beforebegin', div);
+    }
   }
 
   function showChatError(message) {

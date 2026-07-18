@@ -7,6 +7,7 @@ const path = require('path');
 const jwt = require('jsonwebtoken');
 const connectDB = require('./config/db');
 const Message = require('./models/Message');
+const Room = require('./models/Room');
 const authRoutes = require('./routes/auth');
 
 //security
@@ -84,6 +85,74 @@ io.use((socket, next) => {
 io.on('connection', (socket) => {
   console.log(`${socket.username} connected: ${socket.id}`);
 
+  //user creates a room
+  socket.on('create-room', async ({ roomCode, durationDays }) => {
+    if (!roomCode) {
+      socket.emit('error-message', 'Room code is required');
+      return;
+    }
+
+    const cleanRoomCode = roomCode.trim().toLowerCase();
+
+    if (cleanRoomCode.length < 4 || cleanRoomCode.length > 20) {
+      socket.emit(
+        'error-message',
+        'Room code must be between 4 to 20 characters',
+      );
+      return;
+    }
+
+    const days = Number(durationDays);
+    if (![1, 3].includes(days)) {
+      socket.emit(
+        'error-message',
+        'Invalid room duuration, Choose 1 or 3 days.',
+      );
+      return;
+    }
+
+    try {
+      //checking if the room code already exists
+      const existingRoom = await Room.findOne({ roomCode: cleanRoomCode });
+      if (existingRoom) {
+        socket.emit(
+          'error-message',
+          'Room code already exists, try a new one.',
+        );
+        return;
+      }
+
+      //enforcing 5 active rooms per user
+      const userRoomsCount = await Room.countDocuments({
+        createdBy: socket.userId,
+      });
+
+      if (userRoomsCount >= 5) {
+        socket.emit(
+          'error-message',
+          'You have reached the limit of creating 5 active rooms, please wait for them to expire.',
+        );
+        return;
+      }
+
+      //calculating exact expiration time in ms
+      const expiresAt = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
+
+      //saving the room
+      await Room.create({
+        roomCode: cleanRoomCode,
+        createdBy: socket.userId,
+        expiresAt,
+      });
+
+      //reply the success of room creation
+      socket.emit('room-created', { roomCode: cleanRoomCode });
+    } catch (error) {
+      console.error('Error creating room:', error.message);
+      socket.emit('error-message', 'Server error while creating room');
+    }
+  });
+
   // User joins a room
   socket.on('join-room', async (payload) => {
     const roomCode = typeof payload === 'string' ? payload : payload?.roomCode;
@@ -103,8 +172,20 @@ io.on('connection', (socket) => {
       return;
     }
 
-    //Join the socket.io room
-    socket.join(roomCode);
+    try {
+      //verify the room exists in database and isnt expired yet
+      const room = await Room.findOne({ roomCode });
+      if (!room) {
+        socket.emit('error-message', 'Room does not exist or is expired.');
+        return;
+      }
+
+      //Join the socket.io room
+      socket.join(roomCode);
+    } catch (error) {
+      console.error('Error verifying room:', error.message);
+      socket.emit('error-message', 'Server error in joining room');
+    }
 
     // Storing user info on their socket:
     socket.roomCode = roomCode;

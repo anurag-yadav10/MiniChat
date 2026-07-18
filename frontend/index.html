@@ -18,13 +18,42 @@
 
         <p id="welcome-msg"></p>
 
-        <input
-          type="text"
-          id="room-input"
-          placeholder="Room Code (e.g. room123)"
-          maxlength="20"
-        />
-        <button id="join-btn">Join Room</button>
+        <!-- Tabs navigation -->
+        <div class="tabs-container">
+          <button class="tab-btn active" id="tab-join">Join Room</button>
+          <button class="tab-btn" id="tab-create">Create Room</button>
+        </div>
+
+        <!-- Join room form -->
+        <div id="join-form-container" class="form-container active">
+          <input
+            type="text"
+            id="room-input"
+            placeholder="Room Code (e.g. room123)"
+            maxlength="20"
+          />
+          <button id="join-btn">Join Room</button>
+        </div>
+
+        <!-- Create room form -->
+        <div id="create-form-container" class="form-container">
+          <input
+            type="text"
+            id="create-room-input"
+            placeholder="New Room Code (e.g. secretroom)"
+            maxlength="20"
+          />
+
+          <div class="duration-container">
+            <label for="room-duration">Room Duration:</label>
+            <select id="room-duration">
+              <option value="1">1 Day</option>
+              <option value="3">3 Day</option>
+            </select>
+          </div>
+
+          <button id="create-btn">Create Room</button>
+        </div>
       </div>
 
       <!-- Chat Screen -->

@@ -369,3 +369,86 @@ input:focus {
   min-width: 0;
   overflow: hidden;
 }
+
+/* Tabs navigation Styling */
+
+.tabs-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #eee;
+  gap: 10px;
+}
+
+.tab-btn {
+  background: none;
+  border: none;
+  color: #666;
+  font-weight: bold;
+  padding: 10px 16px;
+  cursor: pointer;
+  width: auto;
+  border-radius: 0;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  font-size: 14px;
+}
+
+.tab-btn:hover {
+  background: none;
+  color: #4f8ef7;
+}
+
+.tab-btn.active {
+  color: #4f8ef7;
+  border-bottom-color: #4f8ef7;
+}
+
+/* Form show/hide logic */
+
+.form-container {
+  display: none;
+}
+
+.form-container.active {
+  display: block;
+}
+
+/* Room specific layout styles */
+
+.duration-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  background: #fdfdfd;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+.duration-container label {
+  font-size: 13.5px;
+  color: #555;
+  font-weight: 500;
+}
+
+#room-duration {
+  padding: 6px 12px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: 13.5px;
+  background-color: white;
+  cursor: pointer;
+  outline: none;
+}
+
+#room-duration:focus {
+  border-color: #4f8ef7;
+}
+
+button:disabled {
+  background: #a0bcf5 !important;
+  cursor: not-allowed !important;
+  opacity: 0.8;
+}
