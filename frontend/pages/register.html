@@ -4,6 +4,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="../css/style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+
     <link rel="icon" type="image/x-icon" href="../favicon_io/favicon.ico" />
     <link
       rel="icon"
@@ -44,12 +49,22 @@
           placeholder="Email address"
           required
         />
-        <input
-          type="password"
-          id="password-input"
-          placeholder="Password (min 8 characters)"
-          required
-        />
+        <div class="password-wrapper">
+          <input
+            type="password"
+            id="password-input"
+            placeholder="Password (min 8 characters)"
+            required
+          />
+          <button
+            type="button"
+            id="toggle-password-btn"
+            class="toggle-password-btn"
+            aria-label="Toggle password visibility"
+          >
+            <i class="fa-regular fa-eye" id="toggle-icon"></i>
+          </button>
+        </div>
 
         <div id="password-rules" style="margin-bottom: 12px">
           <div class="rule" id="rule-length">× At least 8 characters</div>

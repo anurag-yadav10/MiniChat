@@ -12,6 +12,27 @@ function setLoading(btn, loading) {
   btn.textContent = loading ? 'Please wait...' : btn.dataset.label; //ternary operator
 }
 
+//Toggle password visibility
+const passwordInput = document.getElementById('password-input');
+const togglePasswordBtn = document.getElementById('toggle-password-btn');
+const toggleIcon = document.getElementById('toggle-icon');
+
+if (passwordInput && togglePasswordBtn && toggleIcon) {
+  togglePasswordBtn.addEventListener('click', () => {
+    const isPassword = passwordInput.type === 'password';
+    passwordInput.type = isPassword ? 'text' : 'password';
+
+    //switch icons
+    if (isPassword) {
+      toggleIcon.classList.remove('fa-eye');
+      toggleIcon.classList.add('fa-eye-slash');
+    } else {
+      toggleIcon.classList.remove('fa-eye-slash');
+      toggleIcon.classList.add('fa-eye');
+    }
+  });
+}
+
 //REGISTER
 
 const registerForm = document.getElementById('register-form');
@@ -120,7 +141,7 @@ if (loginForm) {
 
   loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    
+
     const email = document.getElementById('email-input').value.trim();
     const password = document.getElementById('password-input').value;
 
